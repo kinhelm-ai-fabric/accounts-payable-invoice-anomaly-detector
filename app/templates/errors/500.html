@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+{% block title %}Error - AP Anomaly Detector{% endblock %}
+{% block page_title %}Something Went Wrong{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align:center; padding:3rem">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="1.5" style="margin-bottom:1rem">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+    </svg>
+    <h2>Internal Server Error</h2>
+    <p>An unexpected error occurred. Please try again later or contact support.</p>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary" style="margin-top:1rem">Back to Dashboard</a>
+</div>
+{% endblock %}

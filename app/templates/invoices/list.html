@@ -1,0 +1,83 @@
+{% extends "layouts/base.html" %}
+{% block title %}Invoices - AP Anomaly Detector{% endblock %}
+{% block page_title %}Invoices{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('invoices.create_invoice') }}" class="btn btn-primary btn-sm">+ New Invoice</a>
+<a href="{{ url_for('invoices.upload_csv') }}" class="btn btn-secondary btn-sm">Upload CSV</a>
+{% endblock %}
+
+{% block help_title %}Invoices Help{% endblock %}
+{% block help_content %}
+<p><strong>What is this page?</strong></p>
+<p>The Invoices page lists all invoices in the system. You can filter by status, view details, and manage invoices.</p>
+<p><strong>Status meanings:</strong></p>
+<ul>
+    <li><strong>Pending</strong> &mdash; awaiting review or analysis</li>
+    <li><strong>Flagged</strong> &mdash; anomalies detected, needs attention</li>
+    <li><strong>Approved</strong> &mdash; reviewed and cleared for payment</li>
+    <li><strong>Rejected</strong> &mdash; rejected due to issues</li>
+</ul>
+<p><strong>How to use:</strong></p>
+<ul>
+    <li>Click an invoice number to view its details and anomalies.</li>
+    <li>Use the status filter to narrow results.</li>
+    <li>Click &ldquo;New Invoice&rdquo; to add one manually.</li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="filter-bar">
+        <span>Filter: </span>
+        <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+        <a href="{{ url_for('invoices.list_invoices', status='pending') }}" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">Pending</a>
+        <a href="{{ url_for('invoices.list_invoices', status='flagged') }}" class="btn btn-sm {% if status_filter == 'flagged' %}btn-primary{% else %}btn-outline{% endif %}">Flagged</a>
+        <a href="{{ url_for('invoices.list_invoices', status='approved') }}" class="btn btn-sm {% if status_filter == 'approved' %}btn-primary{% else %}btn-outline{% endif %}">Approved</a>
+        <a href="{{ url_for('invoices.list_invoices', status='rejected') }}" class="btn btn-sm {% if status_filter == 'rejected' %}btn-primary{% else %}btn-outline{% endif %}">Rejected</a>
+    </div>
+
+    {% if invoices %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Vendor</th>
+                <th>Amount</th>
+                <th>Currency</th>
+                <th>Date</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inv in invoices %}
+            <tr>
+                <td><a href="{{ url_for('invoices.view_invoice', invoice_id=inv.id) }}">{{ inv.invoice_number }}</a></td>
+                <td>{{ inv.vendor.name }}</td>
+                <td class="text-right">${{ "%.2f"|format(inv.amount) }}</td>
+                <td>{{ inv.currency }}</td>
+                <td>{{ inv.invoice_date.strftime('%Y-%m-%d') if inv.invoice_date else '-' }}</td>
+                <td>{{ inv.due_date.strftime('%Y-%m-%d') if inv.due_date else '-' }}</td>
+                <td><span class="badge badge-{{ inv.status }}">{{ inv.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('invoices.list_invoices', page=pagination.prev_num, status=status_filter) }}" class="btn btn-sm btn-outline">&laquo; Prev</a>
+        {% endif %}
+        <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ url_for('invoices.list_invoices', page=pagination.next_num, status=status_filter) }}" class="btn btn-sm btn-outline">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <p class="empty-state">No invoices found. <a href="{{ url_for('invoices.create_invoice') }}">Create one</a> or <a href="{{ url_for('invoices.upload_csv') }}">upload a CSV</a>.</p>
+    {% endif %}
+</div>
+{% endblock %}

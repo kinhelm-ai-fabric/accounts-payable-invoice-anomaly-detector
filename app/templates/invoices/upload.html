@@ -1,0 +1,47 @@
+{% extends "layouts/base.html" %}
+{% block title %}Upload CSV - AP Anomaly Detector{% endblock %}
+{% block page_title %}Upload Invoices{% endblock %}
+
+{% block help_title %}CSV Upload Help{% endblock %}
+{% block help_content %}
+<p><strong>How to upload invoices:</strong></p>
+<p>Prepare a CSV file with the following columns:</p>
+<ul>
+    <li><code>invoice_number</code> (required) &mdash; unique invoice ID</li>
+    <li><code>vendor_code</code> &mdash; vendor identifier</li>
+    <li><code>vendor_name</code> &mdash; vendor display name</li>
+    <li><code>amount</code> &mdash; numeric invoice amount</li>
+    <li><code>invoice_date</code> &mdash; format YYYY-MM-DD</li>
+    <li><code>due_date</code> &mdash; format YYYY-MM-DD (optional)</li>
+    <li><code>currency</code> &mdash; e.g., USD, EUR (optional, defaults to USD)</li>
+    <li><code>description</code> &mdash; free text (optional)</li>
+</ul>
+<p>Duplicate invoice numbers are skipped automatically.</p>
+{% endblock %}
+
+{% block content %}
+<div class="card card-form">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="upload-area" id="uploadArea">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p>Drag and drop a CSV file here, or click to browse</p>
+            <input type="file" id="file" name="file" accept=".csv" required>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Upload &amp; Import</button>
+            <a href="{{ url_for('invoices.list_invoices') }}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+
+    <div class="card" style="margin-top:1.5rem">
+        <h3>Sample CSV Format</h3>
+        <pre class="code-block">invoice_number,vendor_code,vendor_name,amount,invoice_date,due_date,currency,description
+INV-2024-001,ACME-001,Acme Corp,5250.00,2024-01-15,2024-02-15,USD,Office supplies Q1
+INV-2024-002,GLOB-002,Globex Inc,12800.50,2024-01-20,2024-02-20,USD,Consulting services</pre>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+version: "1.0"
+project: "accounts-payable-invoice-anomaly-detector"
+framework: "flask"
+entry_point: "wsgi:app"
+
+agents:
+  - name: "Invoice Anomaly Detector Agent"
+    config: "agent/agents/invoice-anomaly-detector.yaml"
+    env_var_name: KINDO_INVOICE_ANOMALY_AGENT_ID
+    overview: >
+      Analyzes accounts payable invoices against vendor history to detect
+      anomalies such as amount outliers, potential duplicates, date irregularities,
+      and other suspicious patterns.

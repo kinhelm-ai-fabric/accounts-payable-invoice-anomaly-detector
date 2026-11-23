@@ -1,0 +1,105 @@
+{% extends "layouts/base.html" %}
+{% block title %}Getting Started - AP Anomaly Detector{% endblock %}
+{% block page_title %}Getting Started{% endblock %}
+{% block body_class %}page-getting-started{% endblock %}
+
+{% block help_title %}Getting Started Help{% endblock %}
+{% block help_content %}
+<p>This page walks you through how to use the AP Anomaly Detector step by step.</p>
+{% endblock %}
+
+{% block content %}
+<div class="getting-started">
+    <div class="gs-nav">
+        <h3>Quick Navigation</h3>
+        <ul>
+            <li><a href="#step-1">What is this app?</a></li>
+            <li><a href="#step-2">Prerequisites</a></li>
+            <li><a href="#step-3">Add your first invoices</a></li>
+            <li><a href="#step-4">Run anomaly analysis</a></li>
+            <li><a href="#step-5">Review and resolve</a></li>
+            <li><a href="#step-6">Next steps</a></li>
+        </ul>
+    </div>
+
+    <div class="gs-steps">
+        <div class="gs-step" id="step-1">
+            <div class="gs-step-badge">1</div>
+            <div class="gs-step-content">
+                <h2>What is this app?</h2>
+                <p>The <strong>Accounts Payable Invoice Anomaly Detector</strong> helps finance teams identify suspicious or unusual invoices before payment. It uses AI-powered analysis and rule-based checks to flag potential issues such as:</p>
+                <ul>
+                    <li>Unusually large amounts compared to vendor history</li>
+                    <li>Potential duplicate invoices</li>
+                    <li>Date anomalies (past-due at creation, unusual timing)</li>
+                    <li>Negative amounts or other data quality issues</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="gs-step" id="step-2">
+            <div class="gs-step-badge">2</div>
+            <div class="gs-step-content">
+                <h2>Prerequisites</h2>
+                <p>To get the most out of this app, you will need:</p>
+                <ul>
+                    <li>Invoice data in CSV format (or manual entry)</li>
+                    <li>A Kindo API key for AI-powered analysis (optional &mdash; rule-based detection works without it)</li>
+                    <li>A modern web browser (Chrome, Firefox, Edge, or Safari)</li>
+                </ul>
+                <p>Default login credentials: <strong>admin / admin</strong>. Change your password after first login.</p>
+            </div>
+        </div>
+
+        <div class="gs-step" id="step-3">
+            <div class="gs-step-badge">3</div>
+            <div class="gs-step-content">
+                <h2>Add Your First Invoices</h2>
+                <p>There are two ways to add invoices:</p>
+                <ul>
+                    <li><strong>CSV Upload:</strong> Go to <a href="{{ url_for('invoices.upload_csv') }}">Upload CSV</a> and upload a file with columns: <code>invoice_number</code>, <code>vendor_code</code>, <code>vendor_name</code>, <code>amount</code>, <code>invoice_date</code>, <code>due_date</code>, <code>currency</code>, <code>description</code>.</li>
+                    <li><strong>Manual Entry:</strong> Go to <a href="{{ url_for('invoices.create_invoice') }}">New Invoice</a> and fill in the form.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="gs-step" id="step-4">
+            <div class="gs-step-badge">4</div>
+            <div class="gs-step-content">
+                <h2>Run Anomaly Analysis</h2>
+                <p>Once you have invoices loaded:</p>
+                <ul>
+                    <li>Go to any invoice detail page and click <strong>Run Analysis</strong> to analyze a single invoice.</li>
+                    <li>Go to the <a href="{{ url_for('analysis.analysis_overview') }}">Anomaly Analysis</a> page and click <strong>Analyze All Pending</strong> to scan all pending invoices at once.</li>
+                </ul>
+                <p>The system compares each invoice against the vendor's historical patterns to detect outliers.</p>
+            </div>
+        </div>
+
+        <div class="gs-step" id="step-5">
+            <div class="gs-step-badge">5</div>
+            <div class="gs-step-content">
+                <h2>Review and Resolve</h2>
+                <p>When anomalies are detected:</p>
+                <ul>
+                    <li>Review the anomaly description and recommendation on the invoice detail page.</li>
+                    <li>Change the invoice status to <strong>Approved</strong> or <strong>Rejected</strong> based on your review.</li>
+                    <li>Mark anomalies as <strong>Resolved</strong> once addressed.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="gs-step" id="step-6">
+            <div class="gs-step-badge">6</div>
+            <div class="gs-step-content">
+                <h2>Next Steps</h2>
+                <ul>
+                    <li>Set up a <strong>Kindo API key</strong> and agent for more accurate AI-powered detection.</li>
+                    <li>Import your production invoice data via CSV.</li>
+                    <li>Use the <strong>?</strong> button on any page for context-specific help.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "layouts/base.html" %}
+{% block title %}Anomaly Analysis - AP Anomaly Detector{% endblock %}
+{% block page_title %}Anomaly Analysis{% endblock %}
+
+{% block header_actions %}
+<form method="POST" action="{{ url_for('analysis.run_all_analysis') }}" style="display:inline">
+    <button type="submit" class="btn btn-primary btn-sm">Analyze All Pending</button>
+</form>
+{% endblock %}
+
+{% block help_title %}Anomaly Analysis Help{% endblock %}
+{% block help_content %}
+<p><strong>What is this page?</strong></p>
+<p>This page shows all detected anomalies across your invoices. Use it to review, prioritize, and resolve findings.</p>
+<p><strong>Severity levels:</strong></p>
+<ul>
+    <li><strong>Critical</strong> &mdash; requires immediate attention (e.g., amount 5x+ above average)</li>
+    <li><strong>High</strong> &mdash; significant anomaly, likely needs investigation</li>
+    <li><strong>Medium</strong> &mdash; moderate deviation, review recommended</li>
+    <li><strong>Low</strong> &mdash; minor flag, informational</li>
+</ul>
+<p><strong>How to use:</strong></p>
+<ul>
+    <li>Click &ldquo;Analyze All Pending&rdquo; to scan all pending invoices.</li>
+    <li>Click on an invoice link to see full details.</li>
+    <li>Resolve anomalies after reviewing them.</li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="stats-grid stats-grid-4">
+    <div class="stat-card stat-card-critical">
+        <div class="stat-value">{{ severity_counts.critical }}</div>
+        <div class="stat-label">Critical</div>
+    </div>
+    <div class="stat-card stat-card-high">
+        <div class="stat-value">{{ severity_counts.high }}</div>
+        <div class="stat-label">High</div>
+    </div>
+    <div class="stat-card stat-card-medium">
+        <div class="stat-value">{{ severity_counts.medium }}</div>
+        <div class="stat-label">Medium</div>
+    </div>
+    <div class="stat-card stat-card-low">
+        <div class="stat-value">{{ severity_counts.low }}</div>
+        <div class="stat-label">Low</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>All Anomalies</h2>
+    {% if anomalies %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Severity</th>
+                <th>Type</th>
+                <th>Invoice</th>
+                <th>Description</th>
+                <th>Confidence</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in anomalies %}
+            <tr class="{% if a.resolved %}row-resolved{% endif %}">
+                <td><span class="badge badge-{{ a.severity }}">{{ a.severity }}</span></td>
+                <td>{{ a.anomaly_type | replace('_', ' ') | title }}</td>
+                <td><a href="{{ url_for('invoices.view_invoice', invoice_id=a.invoice_id) }}">{{ a.invoice.invoice_number }}</a></td>
+                <td>{{ a.description[:80] }}{% if a.description|length > 80 %}...{% endif %}</td>
+                <td>{{ "%.0f"|format(a.confidence * 100) if a.confidence else '-' }}%</td>
+                <td>
+                    {% if a.resolved %}
+                    <span class="text-muted">Resolved</span>
+                    {% else %}
+                    <button class="btn btn-sm btn-outline" onclick="resolveAnomaly({{ a.id }}, this)">Resolve</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No anomalies found. Run analysis on pending invoices to detect potential issues.</p>
+    {% endif %}
+</div>
+
+<script>
+function _basePath() {
+    var m = window.location.pathname.match(/^(\/preview\/[^/]+)/);
+    return m ? m[1] : '';
+}
+function resolveAnomaly(anomalyId, btn) {
+    fetch(_basePath() + '/analysis/resolve/' + anomalyId, {
+        method: 'POST',
+        headers: {'Accept': 'application/json'}
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) { location.reload(); }
+        else { alert(d.error || 'Failed to resolve'); }
+    }).catch(function() { alert('Network error'); });
+}
+</script>
+{% endblock %}

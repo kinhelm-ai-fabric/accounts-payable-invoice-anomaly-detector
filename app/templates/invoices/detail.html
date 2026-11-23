@@ -1,0 +1,127 @@
+{% extends "layouts/base.html" %}
+{% block title %}Invoice {{ invoice.invoice_number }} - AP Anomaly Detector{% endblock %}
+{% block page_title %}Invoice {{ invoice.invoice_number }}{% endblock %}
+
+{% block header_actions %}
+<form method="POST" action="{{ url_for('analysis.run_analysis', invoice_id=invoice.id) }}" style="display:inline">
+    <button type="submit" class="btn btn-primary btn-sm">Run Analysis</button>
+</form>
+{% endblock %}
+
+{% block help_title %}Invoice Detail Help{% endblock %}
+{% block help_content %}
+<p><strong>What is this page?</strong></p>
+<p>This page shows complete details for a single invoice, including any anomalies detected by the analysis engine.</p>
+<p><strong>How to use:</strong></p>
+<ul>
+    <li>Click <strong>Run Analysis</strong> to scan this invoice for anomalies.</li>
+    <li>Use the status buttons to approve or reject the invoice.</li>
+    <li>Click <strong>Resolve</strong> on an anomaly after reviewing it.</li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+    <div class="card">
+        <h2>Invoice Details</h2>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Invoice Number</dt>
+                <dd>{{ invoice.invoice_number }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Vendor</dt>
+                <dd>{{ invoice.vendor.name }} ({{ invoice.vendor.code }})</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Amount</dt>
+                <dd>${{ "%.2f"|format(invoice.amount) }} {{ invoice.currency }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Invoice Date</dt>
+                <dd>{{ invoice.invoice_date.strftime('%Y-%m-%d') if invoice.invoice_date else '-' }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Due Date</dt>
+                <dd>{{ invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else '-' }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Description</dt>
+                <dd>{{ invoice.description or '-' }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Status</dt>
+                <dd>
+                    <span class="badge badge-{{ invoice.status }}">{{ invoice.status }}</span>
+                </dd>
+            </div>
+            <div class="detail-row">
+                <dt>Created</dt>
+                <dd>{{ invoice.created_at.strftime('%Y-%m-%d %H:%M') if invoice.created_at else '-' }}</dd>
+            </div>
+        </dl>
+        <div class="status-actions">
+            <span>Set status:</span>
+            <button class="btn btn-sm btn-outline" onclick="setStatus({{ invoice.id }}, 'approved')">Approve</button>
+            <button class="btn btn-sm btn-outline" onclick="setStatus({{ invoice.id }}, 'rejected')">Reject</button>
+            <button class="btn btn-sm btn-outline" onclick="setStatus({{ invoice.id }}, 'pending')">Reset to Pending</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Anomalies ({{ anomalies|length }})</h2>
+        {% if anomalies %}
+        <div class="anomaly-list">
+            {% for a in anomalies %}
+            <div class="anomaly-item anomaly-{{ a.severity }} {% if a.resolved %}anomaly-resolved{% endif %}">
+                <div class="anomaly-header">
+                    <span class="badge badge-{{ a.severity }}">{{ a.severity }}</span>
+                    <span class="anomaly-type">{{ a.anomaly_type | replace('_', ' ') | title }}</span>
+                    {% if a.confidence %}
+                    <span class="anomaly-confidence">{{ "%.0f"|format(a.confidence * 100) }}% confidence</span>
+                    {% endif %}
+                </div>
+                <p class="anomaly-desc">{{ a.description }}</p>
+                {% if a.recommendation %}
+                <p class="anomaly-rec"><strong>Recommendation:</strong> {{ a.recommendation }}</p>
+                {% endif %}
+                {% if not a.resolved %}
+                <button class="btn btn-sm btn-outline" onclick="resolveAnomaly({{ a.id }}, this)">Resolve</button>
+                {% else %}
+                <span class="text-muted">Resolved {{ a.resolved_at.strftime('%Y-%m-%d') if a.resolved_at else '' }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No anomalies detected. Click &ldquo;Run Analysis&rdquo; to scan this invoice.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function _basePath() {
+    var m = window.location.pathname.match(/^(\/preview\/[^/]+)/);
+    return m ? m[1] : '';
+}
+function setStatus(invoiceId, status) {
+    fetch(_basePath() + '/invoices/' + invoiceId + '/status', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: JSON.stringify({status: status})
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) { location.reload(); }
+        else { alert(d.error || 'Failed to update status'); }
+    }).catch(function() { alert('Network error'); });
+}
+function resolveAnomaly(anomalyId, btn) {
+    fetch(_basePath() + '/analysis/resolve/' + anomalyId, {
+        method: 'POST',
+        headers: {'Accept': 'application/json'}
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d.ok) { location.reload(); }
+        else { alert(d.error || 'Failed to resolve'); }
+    }).catch(function() { alert('Network error'); });
+}
+</script>
+{% endblock %}
